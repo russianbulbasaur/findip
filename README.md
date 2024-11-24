@@ -1,0 +1,2 @@
+# findip
+A dns server
