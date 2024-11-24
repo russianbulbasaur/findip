@@ -11,9 +11,26 @@ type DNSMessage struct {
 }
 
 func NewDNSMessage() DNSMessage {
-	header := NewHeader(1234, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
-	answer := Answer{}
-	question := Question{}
+	header := NewHeader(
+		1234,
+		1,
+		2,
+		0, 0,
+		0, 0,
+		0, 0,
+		0,
+		1,
+		0,
+		0)
+	answerBuilder := AnswerBuilder()
+	answer := answerBuilder.addRR(NewRR("codecrafters.io",
+		1,
+		1, 60,
+		4,
+		"8.8.8.8"))
+	question := NewQuestion("google.com",
+		1,
+		1)
 	authority := Authority{}
 	return DNSMessage{
 		header,

@@ -3,6 +3,7 @@ package dns_message
 import (
 	"bytes"
 	"encoding/binary"
+	"findip/utils"
 )
 
 type Question struct {
@@ -11,9 +12,9 @@ type Question struct {
 	qClass uint16
 }
 
-func NewQuestion(qName []byte, qType uint16, qClass uint16) Question {
+func NewQuestion(domain string, qType uint16, qClass uint16) Question {
 	return Question{
-		qName,
+		utils.DomainToBytes(domain),
 		qType,
 		qClass,
 	}
