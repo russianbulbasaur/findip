@@ -20,6 +20,10 @@ func NewQuestion(domain string, qType uint16, qClass uint16) Question {
 	}
 }
 
+func ParseQuestion(message []byte) Question {
+	return Question{}
+}
+
 func (question Question) serialize() []byte {
 	var response *bytes.Buffer = bytes.NewBuffer(make([]byte, 0))
 	response.Write(question.qName)

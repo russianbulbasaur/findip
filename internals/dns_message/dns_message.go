@@ -1,16 +1,23 @@
 package dns_message
 
-import "bytes"
+import (
+	"bytes"
+)
 
-type DNSMessage struct {
-	header    Header
-	question  Question
-	answer    Answer
-	authority Authority
+type DNSResponse struct {
+	header   Header
+	question Question
+	answer   Answer
+	//authority Authority
 	//additional space
 }
 
-func NewDNSMessage() DNSMessage {
+type DNSRequest struct {
+	header   Header
+	question Question
+}
+
+func NewDNSResponse() DNSResponse {
 	header := NewHeader(
 		1234,
 		1,
@@ -31,20 +38,46 @@ func NewDNSMessage() DNSMessage {
 	question := NewQuestion("google.com",
 		1,
 		1)
-	authority := Authority{}
-	return DNSMessage{
+	//authority := Authority{}
+	return DNSResponse{
 		header,
 		question,
 		answer,
-		authority,
+		//authority,
 	}
 }
 
-func (message DNSMessage) Serialize() []byte {
+func ParseDNSRequest(message []byte) DNSRequest {
+	if len(message) < 12 {
+		panic("Invalid dns request")
+	}
+	header := ParseHeader(message[0:12])
+	question := ParseQuestion(message[12:])
+	return DNSRequest{
+		header,
+		question,
+	}
+}
+
+func (message DNSRequest) GetResponse() DNSResponse {
+	answerBuilder := AnswerBuilder()
+	answer := answerBuilder.addRR(NewRRBytes(message.question.qName,
+		1,
+		1, 60,
+		4,
+		"8.8.8.8"))
+	return DNSResponse{
+		message.header,
+		message.question,
+		answer,
+	}
+}
+
+func (message DNSResponse) Serialize() []byte {
 	var response *bytes.Buffer = bytes.NewBuffer(make([]byte, 0))
 	response.Write(message.header.serialize())
 	response.Write(message.question.serialize())
 	response.Write(message.answer.serialize())
-	response.Write(message.authority.serialize())
+	//response.Write(message.authority.serialize())
 	return response.Bytes()
 }

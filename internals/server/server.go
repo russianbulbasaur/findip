@@ -27,12 +27,13 @@ func (server *Server) Run() {
 	}
 	var buffer []byte = make([]byte, 1024)
 	for {
-		_, client, err := serverSocket.ReadFromUDP(buffer)
+		n, client, err := serverSocket.ReadFromUDP(buffer)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		message := dns_message.NewDNSMessage()
-		response := message.Serialize()
+		request := dns_message.ParseDNSRequest(buffer[0:n])
+		recover()
+		response := request.GetResponse().Serialize()
 		_, err = serverSocket.WriteToUDP(response, client)
 	}
 }

@@ -3,6 +3,7 @@ package dns_message
 import (
 	"bytes"
 	"encoding/binary"
+	"log"
 )
 
 type Header struct {
@@ -33,6 +34,54 @@ func NewHeader(id uint16, qr uint16, opcode uint16, aa uint16, tc uint16, rd uin
 		nsCount,
 		arCount,
 	}
+}
+
+func ParseHeader(message []byte) Header {
+	var id uint16
+	err := binary.Read(bytes.NewBuffer(message[0:2]), binary.BigEndian, id)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	var qrOpcodeAaTcRdRaZRcode uint16
+	err = binary.Read(bytes.NewBuffer(message[2:4]), binary.LittleEndian, qrOpcodeAaTcRdRaZRcode)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	var qdCount uint16
+	err = binary.Read(bytes.NewBuffer(message[4:6]), binary.BigEndian, qdCount)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	var anCount uint16
+	err = binary.Read(bytes.NewBuffer(message[6:8]), binary.BigEndian, anCount)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	var nsCount uint16
+	err = binary.Read(bytes.NewBuffer(message[8:10]), binary.BigEndian, nsCount)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	var arCount uint16
+	err = binary.Read(bytes.NewBuffer(message[10:12]), binary.BigEndian, arCount)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
+	qr := qrOpcodeAaTcRdRaZRcode >> 15
+	opCode := (qrOpcodeAaTcRdRaZRcode << 1) >> 12
+	aa := (qrOpcodeAaTcRdRaZRcode << 5) >> 15
+	tc := (qrOpcodeAaTcRdRaZRcode << 6) >> 15
+	rd := (qrOpcodeAaTcRdRaZRcode << 7) >> 15
+	ra := (qrOpcodeAaTcRdRaZRcode << 8) >> 15
+	z := (qrOpcodeAaTcRdRaZRcode << 9) >> 13
+	rCode := (qrOpcodeAaTcRdRaZRcode << 12) >> 12
+	return NewHeader(id, qr, opCode, aa, tc, rd, ra, z, rCode, qdCount, anCount, nsCount, arCount)
 }
 
 func (header Header) serialize() []byte {
