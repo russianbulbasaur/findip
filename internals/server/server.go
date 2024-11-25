@@ -32,7 +32,6 @@ func (server *Server) Run() {
 			log.Fatalln(err)
 		}
 		request := dns_message.ParseDNSRequest(buffer[0:n])
-		recover()
 		response := request.GetResponse().Serialize()
 		_, err = serverSocket.WriteToUDP(response, client)
 	}

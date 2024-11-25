@@ -3,11 +3,18 @@ package dns_message
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
 )
 
 type Header struct {
 	id                     uint16 //16 bits
+	qr                     uint16
+	opCode                 uint16
+	aa                     uint16
+	tc                     uint16
+	rd                     uint16
+	ra                     uint16
+	z                      uint16
+	Rcode                  uint16
 	qrOpcodeAaTcRdRaZRcode uint16
 	qdCount                uint16
 	anCount                uint16
@@ -15,11 +22,11 @@ type Header struct {
 	arCount                uint16
 }
 
-func NewHeader(id uint16, qr uint16, opcode uint16, aa uint16, tc uint16, rd uint16, ra uint16, z uint16, rCode uint16,
+func NewHeader(id uint16, qr uint16, opCode uint16, aa uint16, tc uint16, rd uint16, ra uint16, z uint16, rCode uint16,
 	qdCount uint16, anCount uint16, nsCount uint16, arCount uint16) Header {
 	var qrOpcodeAaTcRdRaZRcode uint16 = 0
 	qrOpcodeAaTcRdRaZRcode |= qr << 15
-	qrOpcodeAaTcRdRaZRcode |= opcode << 11
+	qrOpcodeAaTcRdRaZRcode |= opCode << 11
 	qrOpcodeAaTcRdRaZRcode |= aa << 10
 	qrOpcodeAaTcRdRaZRcode |= tc << 9
 	qrOpcodeAaTcRdRaZRcode |= rd << 8
@@ -28,6 +35,7 @@ func NewHeader(id uint16, qr uint16, opcode uint16, aa uint16, tc uint16, rd uin
 	qrOpcodeAaTcRdRaZRcode |= rCode
 	return Header{
 		id,
+		qr, opCode, aa, tc, rd, ra, z, rCode,
 		qrOpcodeAaTcRdRaZRcode,
 		qdCount,
 		anCount,
@@ -37,42 +45,12 @@ func NewHeader(id uint16, qr uint16, opcode uint16, aa uint16, tc uint16, rd uin
 }
 
 func ParseHeader(message []byte) Header {
-	var id uint16
-	err := binary.Read(bytes.NewBuffer(message[0:2]), binary.BigEndian, id)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	var qrOpcodeAaTcRdRaZRcode uint16
-	err = binary.Read(bytes.NewBuffer(message[2:4]), binary.LittleEndian, qrOpcodeAaTcRdRaZRcode)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	var qdCount uint16
-	err = binary.Read(bytes.NewBuffer(message[4:6]), binary.BigEndian, qdCount)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	var anCount uint16
-	err = binary.Read(bytes.NewBuffer(message[6:8]), binary.BigEndian, anCount)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	var nsCount uint16
-	err = binary.Read(bytes.NewBuffer(message[8:10]), binary.BigEndian, nsCount)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
-	var arCount uint16
-	err = binary.Read(bytes.NewBuffer(message[10:12]), binary.BigEndian, arCount)
-	if err != nil {
-		log.Println(err)
-		panic(err)
-	}
+	id := binary.BigEndian.Uint16(message[0:2])
+	qrOpcodeAaTcRdRaZRcode := binary.BigEndian.Uint16(message[2:4])
+	qdCount := binary.BigEndian.Uint16(message[4:6])
+	anCount := binary.BigEndian.Uint16(message[6:8])
+	nsCount := binary.BigEndian.Uint16(message[8:10])
+	arCount := binary.BigEndian.Uint16(message[10:12])
 	qr := qrOpcodeAaTcRdRaZRcode >> 15
 	opCode := (qrOpcodeAaTcRdRaZRcode << 1) >> 12
 	aa := (qrOpcodeAaTcRdRaZRcode << 5) >> 15

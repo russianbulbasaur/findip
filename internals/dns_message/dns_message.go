@@ -60,15 +60,26 @@ func ParseDNSRequest(message []byte) DNSRequest {
 }
 
 func (message DNSRequest) GetResponse() DNSResponse {
+	header := NewHeader(message.header.id,
+		1,
+		message.header.opCode,
+		0, 0,
+		message.header.rd, 1,
+		0, 0,
+		1,
+		1,
+		0,
+		0)
+	question := NewQuestion("codecrafters.io", 1, 1)
 	answerBuilder := AnswerBuilder()
-	answer := answerBuilder.addRR(NewRRBytes(message.question.qName,
+	answer := answerBuilder.addRR(NewRR("codecrafters.io",
 		1,
 		1, 60,
 		4,
 		"8.8.8.8"))
 	return DNSResponse{
-		message.header,
-		message.question,
+		header,
+		question,
 		answer,
 	}
 }
